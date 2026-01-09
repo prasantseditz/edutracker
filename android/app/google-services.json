@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "745883040763",
+    "project_id": "edutracker-new",
+    "storage_bucket": "edutracker-new.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:745883040763:android:7187779ac384754cbfa95e",
+        "android_client_info": {
+          "package_name": "com.pglive.edutracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "745883040763-i50qt0q358ngfvsm11hsep4u50dore7f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pglive.edutracker",
+            "certificate_hash": "5cd3cba6ae4521d6ddcfa403277d7f43ff0027f1"
+          }
+        },
+        {
+          "client_id": "745883040763-l697cqekdtm06349743k85rsouk31kr7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pglive.edutracker",
+            "certificate_hash": "498314d567b11769ed2b6b3f6ddbfcd762f452ef"
+          }
+        },
+        {
+          "client_id": "745883040763-agfdf8g6vks6hik72cfaj1ho4suklc43.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTQtqPdXki02C9WsIzOadTd4o1qESVrWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "745883040763-agfdf8g6vks6hik72cfaj1ho4suklc43.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "745883040763-cqfkm1c7cfv88js5s5q8bns26al6ho0v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.edutracker"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

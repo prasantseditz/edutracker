@@ -1,0 +1,87 @@
+name: edutracker
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.1+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  file_picker: ^8.1.2
+  animated_splash_screen: ^1.3.0
+  flutter_native_splash: ^2.3.2
+  android_intent_plus: ^5.2.0
+  url_launcher: ^6.3.1
+  package_info_plus: ^8.1.0
+  cupertino_icons: ^1.0.8
+  fuzzy: ^0.5.1
+  provider: ^6.1.5
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+  intl: ^0.20.2
+  page_transition: ^2.1.0
+  liquid_swipe: ^3.1.0
+  collection: ^1.18.0
+  local_auth: ^2.2.0
+  flutter_secure_storage: ^9.0.0
+  shared_preferences: ^2.2.3
+  google_mobile_ads: ^6.0.0
+  lottie: ^3.1.2
+  permission_handler: ^11.3.0  
+  uuid: ^3.0.7
+  share_plus: ^12.0.1
+  cross_file: ^0.3.5
+  path: ^1.2.0
+  in_app_purchase: ^3.2.3
+  firebase_core: ^4.2.1
+  google_sign_in: ^6.1.1
+  firebase_auth: ^6.1.2
+  cloud_firestore: ^6.1.0
+  connectivity_plus: ^4.0.0
+  google_nav_bar: ^5.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  hive_generator: ^2.0.0
+  build_runner: ^2.1.11
+  flutter_launcher_icons: ^0.13.1
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/fonts/
+    - assets/New logo Edutracker.jpg
+    - assets/google_logo.png
+    - assets/qr_code.jpeg
+   
+
+  fonts:
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-Bold.ttf
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/New logo Edutracker.jpg"
+
+# flutter_native_splash config for native static splash
+flutter_native_splash:
+  color: "#001f3f"        # navy blue background (match your app theme)
+  image: assets/New logo Edutracker.jpg
+  android: true
+  ios: true
+  android_gravity: center
+  fullscreen: true
+  android_12:
+    color: "#001f3f"
+    image: assets/New logo Edutracker.jpg
+
+# If you change min SDK requirements for Android, configure in android/app/build.gradle
