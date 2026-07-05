@@ -40,19 +40,25 @@ android {
     }
 
     signingConfigs {
-        create("release") {
+    create("release") {
+        if (keystorePropertiesFile.exists()) {
             keyAlias = keystoreProperties["keyAlias"] as String
             keyPassword = keystoreProperties["keyPassword"] as String
             storeFile = file(keystoreProperties["storeFile"] as String)
             storePassword = keystoreProperties["storePassword"] as String
         }
     }
+}
 
-    buildTypes {
-        getByName("release") {
+buildTypes {
+    getByName("release") {
+        if (keystorePropertiesFile.exists()) {
             signingConfig = signingConfigs.getByName("release")
+        } else {
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
+
 }
 
 flutter {
