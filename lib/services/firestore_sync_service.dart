@@ -5,6 +5,7 @@ import 'package:hive/hive.dart';
 import '../models/batch.dart';
 import '../models/student.dart';
 import '../models/payment_record.dart';
+import 'notification_service.dart';
 
 class FirestoreSyncService {
   FirestoreSyncService._private();
@@ -71,6 +72,19 @@ class FirestoreSyncService {
 
     // mark last synced
     await userRef.set({'profile': {'lastSyncedAt': FieldValue.serverTimestamp()}}, SetOptions(merge: true));
+
+    // Reset backup sync reminder alarm (since sync completed successfully)
+    await NotificationService.instance.resetBackupReminder();
+
+    // Register/update device FCM token
+    final String? fcmToken = await NotificationService.instance.getDeviceToken();
+    if (fcmToken != null) {
+      await userRef.set({
+        'profile': {
+          'fcmToken': fcmToken,
+        }
+      }, SetOptions(merge: true));
+    }
   }
 
   // ---------- start realtime listeners: firestore -> local Hive ----------

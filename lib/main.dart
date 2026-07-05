@@ -41,6 +41,7 @@ import 'models/payment_record.dart';
 import 'services/lock_service.dart';
 import 'services/ad_manager.dart';
 import 'services/firestore_sync_service.dart';
+import 'services/notification_service.dart';
 
 /// ENTRY POINT
 Future<void> main() async {
@@ -48,6 +49,16 @@ Future<void> main() async {
 
   // 1) Initialize Firebase early
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize Notification Service
+  try {
+    await NotificationService.instance.init();
+    await NotificationService.instance.requestPermissions();
+  } catch (e) {
+    if (kDebugMode) {
+      print('NotificationService init error: $e');
+    }
+  }
 
   // 2) Initialize Hive, register adapters and open all essential boxes synchronously
   try {

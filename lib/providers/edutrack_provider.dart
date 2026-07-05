@@ -18,6 +18,7 @@ import '../models/student.dart';
 import '../models/batch.dart';
 import '../models/payment_record.dart';
 import '../services/ad_manager.dart'; // Import AdManager
+import '../services/notification_service.dart';
 
 class EduTrackProvider extends ChangeNotifier {
   late Box<Student> _studentsBox;
@@ -647,6 +648,23 @@ class EduTrackProvider extends ChangeNotifier {
             'CRITICAL: syncLocalToFirestore payments failed. Code: ${e.code}, Msg: ${e.message}');
       } else {
         debugPrint('syncLocalToFirestore payments error: $e');
+      }
+    }
+
+    // Reset backup sync reminder alarm (since sync completed successfully)
+    await NotificationService.instance.resetBackupReminder();
+
+    // Register/update device FCM token
+    final String? fcmToken = await NotificationService.instance.getDeviceToken();
+    if (fcmToken != null) {
+      try {
+        await _firestore.collection('users').doc(user.uid).set({
+          'profile': {
+            'fcmToken': fcmToken,
+          }
+        }, SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('Failed to upload FCM token in provider sync: $e');
       }
     }
   }
