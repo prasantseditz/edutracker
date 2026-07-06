@@ -19,6 +19,8 @@ import '../models/batch.dart';
 import '../models/payment_record.dart';
 import '../services/ad_manager.dart'; // Import AdManager
 import '../services/notification_service.dart';
+import '../services/achievement_service.dart';
+import '../services/google_auth_service.dart';
 
 class EduTrackProvider extends ChangeNotifier {
   late Box<Student> _studentsBox;
@@ -685,6 +687,7 @@ class EduTrackProvider extends ChangeNotifier {
     } else {
       await _batchesBox.put(batch.id, batch);
       debugPrint('>>> addBatch -> created batch ${batch.id}');
+      AchievementService.instance.checkBatchMilestones(_batchesBox.length);
     }
 
     // Try upload to Firestore if signed in
@@ -820,11 +823,13 @@ class EduTrackProvider extends ChangeNotifier {
       await _batchesBox.put(newBatchId, newBatch);
       debugPrint(
           '>>> addStudent -> created batch $newBatchId for ${studentToSave.name}');
+      AchievementService.instance.checkBatchMilestones(_batchesBox.length);
     }
 
     await _studentsBox.put(studentToSave.id, studentToSave);
     debugPrint(
         '>>> addStudent -> saved student ${studentToSave.id} with fees $finalFees');
+    AchievementService.instance.checkStudentMilestones(_studentsBox.length);
 
     // Handle Sibling Back-linking
     if (studentToSave.siblingId != null) {
@@ -1156,6 +1161,9 @@ class EduTrackProvider extends ChangeNotifier {
     }
 
     await _paymentsBox.put(recordToSave.id, recordToSave);
+    if (isPaid) {
+      AchievementService.instance.checkPaymentMilestones(_paymentsBox.length);
+    }
 
     // Update student history
     int histIdx = student.paymentHistory.indexWhere(
@@ -2145,6 +2153,17 @@ class EduTrackProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Re-authenticate first because account deletion is a highly sensitive operation in Firebase Auth.
+      // Doing this first ensures we don't partially delete their Firestore/Hive database records if Auth deletion fails.
+      final firebaseServices = FirebaseServices();
+      final success = await firebaseServices.reauthenticateUser();
+      if (!success) {
+        throw FirebaseAuthException(
+          code: 'requires-recent-login',
+          message: 'This operation is sensitive and requires re-authentication. Re-authentication cancelled or failed.',
+        );
+      }
+
       final uid = user.uid;
 
       // 1. Delete all sub-collections (batches, students, payments)

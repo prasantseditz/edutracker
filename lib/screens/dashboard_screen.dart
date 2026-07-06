@@ -1228,6 +1228,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         remaining = _blockDuration - diff;
       }
     }
+    bool intervalExtended = prefs.getBool('ad_interval_extended') ?? false;
 
     // show modal bottom sheet with stateful builder
     if (!mounted) return;
@@ -1239,7 +1240,9 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       builder: (sheetCtx) {
         bool isLoading = false;
+        bool isExtendLoading = false;
         bool used = rewardActive;
+        bool extended = intervalExtended;
 
         String prettyDuration(Duration d) {
           final hours = d.inHours;
@@ -1381,6 +1384,62 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   );
                                 },
                           child: const Text('Watch & Pause'),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Extend Intervals card
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.timer),
+                  title: const Text('Watch an Ad — Extend Ad Intervals'),
+                  subtitle: extended
+                      ? const Text('Already Activated. Ads now appear less frequently.')
+                      : const Text('Watch one ad to permanently extend the interval between ads.'),
+                  trailing: isExtendLoading
+                      ? SizedBox(
+                          width: 96,
+                          child: Center(
+                            child: SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                        )
+                      : ElevatedButton(
+                          onPressed: extended
+                              ? null
+                              : () async {
+                                  setStateSheet(() => isExtendLoading = true);
+                                  AdManager.instance.showRewardedAd(
+                                    context: context,
+                                    onUserEarnedReward: (reward) async {
+                                      final prefs = await SharedPreferences.getInstance();
+                                      await prefs.setBool('ad_interval_extended', true);
+                                      setStateSheet(() {
+                                        isExtendLoading = false;
+                                        extended = true;
+                                      });
+                                      if (mounted) {
+                                        Navigator.of(sheetCtx).pop();
+                                        rootScaffoldMessengerKey.currentState?.showSnackBar(
+                                          const SnackBar(
+                                              content: Text('Ad intervals have been permanently extended!')),
+                                        );
+                                      }
+                                    },
+                                    onAdClosed: () {
+                                      setStateSheet(() => isExtendLoading = false);
+                                    },
+                                    onFailedToLoad: (err) {
+                                      setStateSheet(() => isExtendLoading = false);
+                                      rootScaffoldMessengerKey.currentState?.showSnackBar(
+                                        SnackBar(content: Text('Ad failed to load: ${err.message}')),
+                                      );
+                                    },
+                                  );
+                                },
+                          child: const Text('Extend'),
                         ),
                 ),
               ),

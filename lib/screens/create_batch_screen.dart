@@ -11,6 +11,7 @@ import '../providers/edutrack_provider.dart';
 import '../models/batch.dart';
 import '../models/student.dart';
 import '../services/ad_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/responsive_container.dart';
 
 // CreateBatchScreen with offline-check dialog and create-button lock
@@ -31,8 +32,6 @@ class _CreateBatchScreenState extends State<CreateBatchScreen> {
   ];
 
   static const String _interstitialCounterKey = 'interstitial_nav_count';
-  static const int _showEvery = 3; // show every 3 navigations
-
   bool _isSaving = false;
   String _feesCycle = 'monthly';
 
@@ -159,7 +158,11 @@ class _CreateBatchScreenState extends State<CreateBatchScreen> {
       final int next = prev + 1;
       await settings.put(_interstitialCounterKey, next);
 
-      final bool shouldShowAd = (next % _showEvery == 0);
+      final prefs = await SharedPreferences.getInstance();
+      final bool intervalExtended = prefs.getBool('ad_interval_extended') ?? false;
+      final int currentShowEvery = intervalExtended ? 10 : 3;
+
+      final bool shouldShowAd = (next % currentShowEvery == 0);
 
       if (shouldShowAd) {
         final allowed = await AdManager.instance.canShowInterstitial();

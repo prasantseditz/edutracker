@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../app_globals.dart';
 
 @pragma('vm:entry-point')
@@ -18,6 +20,7 @@ class NotificationService {
   static final NotificationService instance = NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin get localNotifications => _localNotifications;
   bool _isInitialized = false;
 
   /// Initialize notifications and set up listeners
@@ -26,12 +29,20 @@ class NotificationService {
 
     // 1. Initialize Timezone database
     tz.initializeTimeZones();
-    // Default to local/device timezone
-    // timezone package's local is configured automatically inside initializeTimeZones()
+    try {
+      final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+      final String timeZoneName = timezoneInfo.identifier;
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
+    } catch (e) {
+      if (kDebugMode) {
+        print("Failed to set local timezone, defaulting to UTC: $e");
+      }
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    }
     
     // 2. Local Notifications Initialization settings
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
 
     const DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings(
@@ -76,9 +87,22 @@ class NotificationService {
     // 1. Request local notification permissions
     bool? localPermission = false;
     if (Platform.isAndroid) {
-      localPermission = await _localNotifications
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
+      final androidPlugin = _localNotifications
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+
+      // Request standard notification permission (Android 13+)
+      localPermission = await androidPlugin?.requestNotificationsPermission();
+
+      // Request exact alarm permission (Android 12+)
+      // This opens Settings > Apps > Special app access > Alarms & Reminders
+      await androidPlugin?.requestExactAlarmsPermission();
+
+      // Request battery optimization exemption (CRITICAL for Vivo/Xiaomi/Oppo phones!)
+      // Without this, the OS kills background notifications before they fire.
+      final batteryStatus = await Permission.ignoreBatteryOptimizations.status;
+      if (!batteryStatus.isGranted) {
+        await Permission.ignoreBatteryOptimizations.request();
+      }
     } else if (Platform.isIOS) {
       localPermission = await _localNotifications
           .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
@@ -123,12 +147,32 @@ class NotificationService {
       playSound: true,
     );
 
+    const AndroidNotificationChannel smartChannel = AndroidNotificationChannel(
+      'smart_reminders_channel',
+      'Smart Reminders',
+      description: 'Reminders and tips for managing tuition',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+    );
+
+    const AndroidNotificationChannel achievementsChannel = AndroidNotificationChannel(
+      'achievements_channel',
+      'Achievements',
+      description: 'App milestones and achievements',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+    );
+
     final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
         _localNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
 
     if (androidImplementation != null) {
       await androidImplementation.createNotificationChannel(duesChannel);
       await androidImplementation.createNotificationChannel(backupChannel);
+      await androidImplementation.createNotificationChannel(smartChannel);
+      await androidImplementation.createNotificationChannel(achievementsChannel);
     }
   }
 
@@ -157,7 +201,7 @@ class NotificationService {
               channelDescription: 'Reminders for checking monthly student fee dues',
               importance: Importance.max,
               priority: Priority.high,
-              icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+              icon: android?.smallIcon ?? '@mipmap/launcher_icon',
             ),
             iOS: const DarwinNotificationDetails(
               presentAlert: true,
@@ -264,7 +308,7 @@ class NotificationService {
           presentSound: true,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
       payload: 'due-details',
     );
@@ -304,7 +348,7 @@ class NotificationService {
           presentSound: true,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
       payload: 'due-details',
     );
@@ -346,7 +390,7 @@ class NotificationService {
           presentSound: true,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: 'settings',
     );
 

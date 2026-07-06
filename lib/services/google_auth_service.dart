@@ -53,4 +53,42 @@ class FirebaseServices {
       if (kDebugMode) print('Error during Google sign-out: $e');
     }
   }
+
+  Future<bool> reauthenticateUser() async {
+    try {
+      final User? user = auth.currentUser;
+      if (user == null) return false;
+
+      if (kIsWeb) {
+        final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        googleProvider.addScope('email');
+        await user.reauthenticateWithPopup(googleProvider);
+        return true;
+      } else {
+        await googleSignIn.signOut();
+        final gs.GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+
+        if (googleSignInAccount == null) {
+          return false;
+        }
+
+        final gs.GoogleSignInAuthentication googleSignInAuthentication =
+            await googleSignInAccount.authentication;
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleSignInAuthentication.accessToken,
+          idToken: googleSignInAuthentication.idToken,
+        );
+
+        await user.reauthenticateWithCredential(credential);
+        return true;
+      }
+    } catch (e, st) {
+      if (kDebugMode) {
+        print('Error during Google re-authentication: $e');
+        print(st);
+      }
+      return false;
+    }
+  }
 }

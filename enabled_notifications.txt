@@ -1,0 +1,154 @@
+========================================================================
+                      EDUTRACKER NOTIFICATION SERVICES
+========================================================================
+This document summarizes all the local and remote notifications integrated 
+into the EduTracker application, including their types, titles, messages, 
+and trigger conditions.
+
+------------------------------------------------------------------------
+>>> SERVICE TYPE GUIDE
+------------------------------------------------------------------------
+- LOCAL NOTIFICATIONS: Generated and scheduled entirely on the device itself
+  (runs offline, no internet required, manages milestones and daily routines).
+- FCM (REMOTE) NOTIFICATIONS: Sent remotely from the Firebase Cloud Console
+  (requires internet, used for broadcast updates, alerts, and custom messages).
+
+========================================================================
+                      [TYPE 1: LOCAL NOTIFICATIONS]
+========================================================================
+
+------------------------------------------------------------------------
+1. MILESTONES & ACHIEVEMENTS (Fires instantly on actions)
+------------------------------------------------------------------------
+A. Batch Creation
+   - Trigger: Creating your very first Batch (either explicitly or implicitly during student creation).
+   - Title: Batch Created 🏅
+   - Message: First batch created successfully. 🎉
+   - ID: 7001
+
+B. Student Milestones
+   - Trigger: Adding your 1st student.
+     - Title: Student Added 👨‍🎓
+     - Message: Congratulations! You added your first student.
+     - ID: 6001
+   - Trigger: Adding your 10th student.
+     - Title: 10 Students Milestone! 🚀
+     - Message: You are managing 10 students now. Great job!
+     - ID: 6010
+   - Trigger: Adding your 50th student.
+     - Title: 50 Students Milestone! 🌟
+     - Message: 50 students registered. Keep it up!
+     - ID: 6050
+   - Trigger: Adding your 100th student.
+     - Title: 100 Students Milestone! 🏆
+     - Message: Incredible! 100 students managed on EduTracker.
+     - ID: 6100
+
+C. Payment Records
+   - Trigger: Recording your very first payment.
+     - Title: Payment Added 💰
+     - Message: First payment successfully added. 🎉
+     - ID: 8001
+   - Trigger: Recording your 100th payment.
+     - Title: 100 Payments! 🎯
+     - Message: 100 Payment Records completed.
+     - ID: 8100
+
+------------------------------------------------------------------------
+2. SECURITY & UTILITY REMINDERS (Fires on state changes)
+------------------------------------------------------------------------
+A. App Lock Warning
+   - Trigger: Disabling the App Lock in settings.
+   - Title: Security Alert 🔒
+   - Message: Enable App Lock to secure your data.
+   - ID: 9001
+
+B. Backup Success
+   - Trigger: Successful sync/backup of local Hive data to Cloud Firestore.
+   - Title: Backup Complete ☁️
+   - Message: All your data has been successfully backed up to the Cloud.
+   - ID: 9002
+
+C. Backup Error
+   - Trigger: Failure during sync of local data to Cloud Firestore.
+   - Title: Backup Warning ⚠️
+   - Message: Cloud sync failed. Check your internet connection.
+   - ID: 9003
+
+------------------------------------------------------------------------
+3. SMART SCHEDULED REMINDERS (Fires automatically in background)
+------------------------------------------------------------------------
+A. Daily Morning Greetings
+   - Trigger: Every day at 8:40 AM (temporarily for testing; will be changed to 7:00 AM later).
+   - Title: Good Morning! 🌞
+   - Message: 7 rotating personalized messages greeting you by name and prompting you to update tuition fees (non-consecutive repeats).
+   - ID Range: 5001 - 5007
+
+B. Daily Evening Greetings
+   - Trigger: Every day at 7:30 PM (19:30).
+   - Title: Good Evening! 🌙
+   - Message: 7 rotating personalized messages greeting you by name and prompting you to record today's collections and wrap up tuition entries (non-consecutive repeats).
+   - ID Range: 5101 - 5107
+
+C. Weekly Review
+   - Trigger: Every Sunday at 10:00 AM.
+   - Title: Weekly Review 📊
+   - Message: Review your weekly batches and payment reports.
+   - ID: 4003
+
+D. Monthly Fee Cycle Checks
+   - Trigger: 1st of every month at 9:00 AM.
+     - Title: New Fee Month 📅
+     - Message: A new month has started. Remember to update dues and generate fee slips.
+     - ID: 2001
+   - Trigger: 15th of every month at 10:00 AM.
+     - Title: Mid-Month Fee Review 💰
+     - Message: Check pending collections for this month.
+     - ID: 3001
+
+------------------------------------------------------------------------
+4. APP LIFECYCLE & ACTIVITY REMINDERS (Triggers on App Minimize/Close)
+------------------------------------------------------------------------
+A. Dormancy Warnings (Scheduled when app is minimized, cancelled when opened)
+   - Trigger: App has not been opened for 3 days.
+     - Title: We Miss You! 👋
+     - Message: Keep your student logs updated. Open EduTracker today.
+     - ID: 1003
+   - Trigger: App has not been opened for 7 days.
+     - Title: Update Records 📝
+     - Message: It's been a week! Check if there are any new student fees to collect.
+     - ID: 1007
+   - Trigger: App has not been opened for 15 days.
+     - Title: Secure Your Data 🔒
+     - Message: Open the app to ensure your cloud backup is up to date.
+     - ID: 1015
+   - Trigger: App has not been opened for 30 days.
+     - Title: Monthly Catch-Up 📅
+     - Message: Let's review this month's tuition progress. Open EduTracker.
+     - ID: 1030
+
+B. Pending Fee Dues Alert
+   - Trigger: On app startup, if there are outstanding fees/dues (fires max once a day).
+   - Title: Fee Dues Pending 📅
+   - Message: You have outstanding tuition fee collections. Check your dashboard.
+   - ID: 4001
+
+
+========================================================================
+                      [TYPE 2: FCM / REMOTE NOTIFICATIONS]
+========================================================================
+
+------------------------------------------------------------------------
+5. FIREBASE CLOUD MESSAGING (FCM) - Remotely Sent
+------------------------------------------------------------------------
+A. Custom Push Campaigns (Admin Broadcasts)
+   - Trigger: Sent manually by the Admin/Developer from the Firebase Console 
+     (e.g., to all registered users or targeted segments).
+   - Content: Custom Title and Custom Message body.
+   - Behaviors:
+     - Foreground: If the app is active, it catches the FCM message and uses 
+       the Local Notification Plugin to show it using the channel 
+       'dues_reminders_channel'.
+     - Background / Closed: The Android OS automatically catches the message 
+       via Google Play Services and shows it in the system tray natively.
+========================================================================

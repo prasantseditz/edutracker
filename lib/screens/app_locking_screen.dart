@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import '../services/ad_manager.dart';
 import '../services/lock_service.dart';
+import '../services/achievement_service.dart';
 import '../app_globals.dart';
 import 'set_pin_screen.dart';
 
@@ -142,6 +143,7 @@ class _AppLockingScreenState extends State<AppLockingScreen> {
       await LockService.setUseDeviceLock(false);
       await LockService.deletePin();
       await LockService.setAppLocked(false);
+      AchievementService.instance.triggerAppLockReminder();
       if (!mounted) return;
       await _loadSettings();
       messenger

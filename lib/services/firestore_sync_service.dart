@@ -6,6 +6,7 @@ import '../models/batch.dart';
 import '../models/student.dart';
 import '../models/payment_record.dart';
 import 'notification_service.dart';
+import 'achievement_service.dart';
 
 class FirestoreSyncService {
   FirestoreSyncService._private();
@@ -19,9 +20,10 @@ class FirestoreSyncService {
 
   // ---------- bulk upload local -> firestore (chunked) ----------
   Future<void> syncLocalToFirestore(String uid) async {
-    final userRef = _db.collection('users').doc(uid);
-    // ensure user doc exists
-    await userRef.set({'profile': {'lastSyncedAt': FieldValue.serverTimestamp()}}, SetOptions(merge: true));
+    try {
+      final userRef = _db.collection('users').doc(uid);
+      // ensure user doc exists
+      await userRef.set({'profile': {'lastSyncedAt': FieldValue.serverTimestamp()}}, SetOptions(merge: true));
 
     // defensive: boxes must be open in main.dart normally
     if (!Hive.isBoxOpen('batches') || !Hive.isBoxOpen('students') || !Hive.isBoxOpen('payments')) {
@@ -75,6 +77,7 @@ class FirestoreSyncService {
 
     // Reset backup sync reminder alarm (since sync completed successfully)
     await NotificationService.instance.resetBackupReminder();
+    await AchievementService.instance.triggerBackupSuccess();
 
     // Register/update device FCM token
     final String? fcmToken = await NotificationService.instance.getDeviceToken();
@@ -84,6 +87,10 @@ class FirestoreSyncService {
           'fcmToken': fcmToken,
         }
       }, SetOptions(merge: true));
+    }
+    } catch (e) {
+      await AchievementService.instance.triggerBackupError();
+      rethrow;
     }
   }
 

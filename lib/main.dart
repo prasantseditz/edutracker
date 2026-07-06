@@ -42,6 +42,7 @@ import 'services/lock_service.dart';
 import 'services/ad_manager.dart';
 import 'services/firestore_sync_service.dart';
 import 'services/notification_service.dart';
+import 'services/smart_notification_service.dart';
 
 /// ENTRY POINT
 Future<void> main() async {
@@ -53,7 +54,6 @@ Future<void> main() async {
   // Initialize Notification Service
   try {
     await NotificationService.instance.init();
-    await NotificationService.instance.requestPermissions();
   } catch (e) {
     if (kDebugMode) {
       print('NotificationService init error: $e');
@@ -133,9 +133,45 @@ void _startBackgroundInitialization() {
 }
 
 /// Root widget: top-level providers + single MaterialApp
-class AuthRoot extends StatelessWidget {
+class AuthRoot extends StatefulWidget {
   final bool onboardingPref;
   const AuthRoot({super.key, required this.onboardingPref});
+
+  @override
+  State<AuthRoot> createState() => _AuthRootState();
+}
+
+class _AuthRootState extends State<AuthRoot> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    SmartNotificationService.instance.initSchedules();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await NotificationService.instance.requestPermissions();
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error requesting notification permissions: $e');
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.detached) {
+      SmartNotificationService.instance.scheduleInactiveReminders();
+    } else if (state == AppLifecycleState.resumed) {
+      SmartNotificationService.instance.cancelInactiveReminders();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,13 +232,13 @@ class AuthRoot extends StatelessWidget {
               });
 
               // user signed in -> decide onboarding
-              bool onboardingComplete = onboardingPref;
+              bool onboardingComplete = widget.onboardingPref;
               try {
                 if (Hive.isBoxOpen('settings')) {
                   final box = Hive.box('settings');
                   onboardingComplete = box.get('onboarding_complete',
-                          defaultValue: onboardingPref) as bool? ??
-                      onboardingPref;
+                          defaultValue: widget.onboardingPref) as bool? ??
+                      widget.onboardingPref;
                 }
               } catch (_) {}
 

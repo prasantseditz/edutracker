@@ -15,6 +15,7 @@ import '../widgets/payment_warning_dialog.dart';
 import '../widgets/fade_in.dart';
 import 'dart:async';
 import '../services/ad_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'yearly_history_screen.dart';
 
@@ -57,9 +58,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   int _currentAdDelaySeconds = 35;
+  bool _intervalExtended = false;
 
-  void _startAdTimer() {
-    _scheduleNextAd();
+  void _startAdTimer() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      _intervalExtended = prefs.getBool('ad_interval_extended') ?? false;
+      if (_intervalExtended) {
+        _currentAdDelaySeconds = 120;
+      }
+      _scheduleNextAd();
+    }
   }
 
   void _scheduleNextAd() {
@@ -87,7 +96,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void _incrementDelayAndReschedule() {
     if (!mounted) return;
     setState(() {
-      _currentAdDelaySeconds += 5;
+      _currentAdDelaySeconds += _intervalExtended ? 30 : 5;
     });
     _scheduleNextAd();
   }
