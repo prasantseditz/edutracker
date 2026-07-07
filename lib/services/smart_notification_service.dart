@@ -252,7 +252,7 @@ class SmartNotificationService {
         body: body,
         scheduledDate: scheduledDate,
         notificationDetails: _notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
       );
     }
@@ -275,7 +275,7 @@ class SmartNotificationService {
         body: body,
         scheduledDate: scheduledDate,
         notificationDetails: _notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
     }
 
@@ -294,6 +294,13 @@ class SmartNotificationService {
   }
 
   Future<void> checkFeatureBasedReminders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastFeatureNotice = prefs.getString('last_feature_notice_date');
+    final todayStr = "${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}";
+    
+    // Only fire feature reminders once a day maximum
+    if (lastFeatureNotice == todayStr) return;
+
     if (!Hive.isBoxOpen('batches')) return;
     
     Box batchBox;
@@ -313,6 +320,8 @@ class SmartNotificationService {
         title: 'No Batches Yet 📚',
         body: 'No batches created yet. Create a Batch now!',
       );
+      await prefs.setString('last_feature_notice_date', todayStr);
+      return; // Only show one feature reminder per day
     }
 
     if (Hive.isBoxOpen('students')) {
@@ -333,6 +342,7 @@ class SmartNotificationService {
           title: 'Add Students 👨‍🎓',
           body: 'Add your first Student to begin Tuition Management.',
         );
+        await prefs.setString('last_feature_notice_date', todayStr);
       }
     }
   }
