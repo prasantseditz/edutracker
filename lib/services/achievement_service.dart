@@ -31,7 +31,7 @@ class AchievementService {
   
   set mockPlugin(FlutterLocalNotificationsPlugin plugin) => _mockPlugin = plugin;
 
-  Future<void> _checkAndFire(String key, int id, String title, String body) async {
+  Future<void> _checkAndFire(String key, int id, String title, String body, {String? payload}) async {
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getBool(key) == true) return; // Already fired
 
@@ -40,6 +40,7 @@ class AchievementService {
       title: title,
       body: body,
       notificationDetails: _notificationDetails,
+      payload: payload,
     );
     await prefs.setBool(key, true);
   }
@@ -48,27 +49,27 @@ class AchievementService {
 
   Future<void> checkStudentMilestones(int studentCount) async {
     if (studentCount == 1) {
-      await _checkAndFire('achieve_student_1', 6001, 'Student Added 👨‍🎓', 'Congratulations! You added your first student.');
+      await _checkAndFire('achieve_student_1', 6001, 'Student Added 👨‍🎓', 'Congratulations! You added your first student.', payload: '/batches');
     } else if (studentCount == 10) {
-      await _checkAndFire('achieve_student_10', 6010, '10 Students! 🎉', 'Congratulations! You now have 10 Students in your coaching.');
+      await _checkAndFire('achieve_student_10', 6010, '10 Students! 🎉', 'Congratulations! You now have 10 Students in your coaching.', payload: '/batches');
     } else if (studentCount == 50) {
-      await _checkAndFire('achieve_student_50', 6050, '50 Students! 🏆', 'Awesome! You\'ve reached 50 Students.');
+      await _checkAndFire('achieve_student_50', 6050, '50 Students! 🏆', 'Awesome! You\'ve reached 50 Students.', payload: '/batches');
     } else if (studentCount == 100) {
-      await _checkAndFire('achieve_student_100', 6100, '100 Students! 🚀', 'Great job! Your coaching is growing fast with 100 Students!');
+      await _checkAndFire('achieve_student_100', 6100, '100 Students! 🚀', 'Great job! Your coaching is growing fast with 100 Students!', payload: '/batches');
     }
   }
 
   Future<void> checkBatchMilestones(int batchCount) async {
     if (batchCount == 1) {
-      await _checkAndFire('achieve_batch_1', 7001, 'Batch Created 🏅', 'First batch created successfully.');
+      await _checkAndFire('achieve_batch_1', 7001, 'Batch Created 🏅', 'First batch created successfully.', payload: '/batches');
     }
   }
 
   Future<void> checkPaymentMilestones(int paymentCount) async {
     if (paymentCount == 1) {
-      await _checkAndFire('achieve_payment_1', 8001, 'Payment Added 💰', 'First payment successfully added. 🎉');
+      await _checkAndFire('achieve_payment_1', 8001, 'Payment Added 💰', 'First payment successfully added. 🎉', payload: '/history');
     } else if (paymentCount == 100) {
-      await _checkAndFire('achieve_payment_100', 8100, '100 Payments! 🎯', '100 Payment Records completed.');
+      await _checkAndFire('achieve_payment_100', 8100, '100 Payments! 🎯', '100 Payment Records completed.', payload: '/history');
     }
   }
 
@@ -78,6 +79,7 @@ class AchievementService {
       title: 'Security Alert 🔒',
       body: 'Enable App Lock to secure your data.',
       notificationDetails: _notificationDetails,
+      payload: '/settings',
     );
   }
 

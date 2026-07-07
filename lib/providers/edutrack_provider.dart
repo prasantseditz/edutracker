@@ -724,6 +724,9 @@ class EduTrackProvider extends ChangeNotifier {
     await _batchesBox.put(targetBatchId, batchToSave);
     debugPrint(
         '>>> createBatchWithStudents -> batch saved $targetBatchId with ${studentsList.length} students');
+    
+    // Trigger batch milestone after saving
+    AchievementService.instance.checkBatchMilestones(_batchesBox.length);
 
     for (final s in studentsList) {
       final existingStudent = _studentsBox.values.firstWhereOrNull(
@@ -758,6 +761,9 @@ class EduTrackProvider extends ChangeNotifier {
         await _studentsBox.put(studentToSave.id, studentToSave);
         debugPrint(
             '>>> createBatchWithStudents -> added student ${studentToSave.id}');
+        
+        // Trigger student milestone after each student is added
+        AchievementService.instance.checkStudentMilestones(_studentsBox.length);
       }
     }
 

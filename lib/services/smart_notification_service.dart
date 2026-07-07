@@ -78,12 +78,13 @@ class SmartNotificationService {
     await checkFeatureBasedReminders();
   }
 
-  Future<void> _showImmediateNotification({required int id, required String title, required String body}) async {
+  Future<void> _showImmediateNotification({required int id, required String title, required String body, String? payload}) async {
     await _plugin.show(
       id: id,
       title: title,
       body: body,
       notificationDetails: _notificationDetails,
+      payload: payload,
     );
   }
 
@@ -143,6 +144,7 @@ class SmartNotificationService {
         scheduledDate: scheduledDate,
         notificationDetails: _notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '/batches',
       );
       if (kDebugMode) {
         print('>>> Daily Reminder Day ${dayOffset + 1} scheduled for: $scheduledDate');
@@ -205,6 +207,7 @@ class SmartNotificationService {
         scheduledDate: scheduledDate,
         notificationDetails: _notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '/batches',
       );
       if (kDebugMode) {
         print('>>> Evening Reminder Day ${dayOffset + 1} scheduled for: $scheduledDate');
@@ -235,6 +238,7 @@ class SmartNotificationService {
       notificationDetails: _notificationDetails,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime, // Repeat weekly
+      payload: '/history',
     );
   }
 
@@ -254,6 +258,7 @@ class SmartNotificationService {
         notificationDetails: _notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
+        payload: '/due-details',
       );
     }
 
@@ -276,6 +281,7 @@ class SmartNotificationService {
         scheduledDate: scheduledDate,
         notificationDetails: _notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        payload: '/batches',
       );
     }
 
@@ -319,6 +325,7 @@ class SmartNotificationService {
         id: 5002,
         title: 'No Batches Yet 📚',
         body: 'No batches created yet. Create a Batch now!',
+        payload: '/create-batch',
       );
       await prefs.setString('last_feature_notice_date', todayStr);
       return; // Only show one feature reminder per day
@@ -341,6 +348,7 @@ class SmartNotificationService {
           id: 5003,
           title: 'Add Students 👨‍🎓',
           body: 'Add your first Student to begin Tuition Management.',
+          payload: '/add-student',
         );
         await prefs.setString('last_feature_notice_date', todayStr);
       }
@@ -399,6 +407,7 @@ class SmartNotificationService {
           id: _dueReminderId,
           title: 'Fee Dues Reminder 💰',
           body: 'You have $dueCount students with Fee Dues. Total Due Amount is ₹${totalDue.toStringAsFixed(0)}.',
+          payload: '/due-details',
         );
         await prefs.setString('last_due_notice_date', todayStr);
       }

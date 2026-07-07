@@ -244,16 +244,21 @@ class NotificationService {
 
   /// Handles page routing when a user clicks a notification
   void _handleNotificationClick(String? payload) {
-    if (payload == null) return;
+    if (payload == null || payload.isEmpty) return;
     
     // We add a short delay to ensure the navigation stack is fully ready
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (payload == 'due-details') {
-        rootNavigatorKey.currentState?.pushNamed('/due-details');
-      } else if (payload == 'subscribe') {
-        rootNavigatorKey.currentState?.pushNamed('/subscribe');
-      } else if (payload == 'settings') {
-        rootNavigatorKey.currentState?.pushNamed('/settings');
+      if (payload.startsWith('/')) {
+        rootNavigatorKey.currentState?.pushNamed(payload);
+      } else {
+        // Fallback for older payloads
+        if (payload == 'due-details') {
+          rootNavigatorKey.currentState?.pushNamed('/due-details');
+        } else if (payload == 'subscribe') {
+          rootNavigatorKey.currentState?.pushNamed('/subscribe');
+        } else if (payload == 'settings') {
+          rootNavigatorKey.currentState?.pushNamed('/settings');
+        }
       }
     });
   }

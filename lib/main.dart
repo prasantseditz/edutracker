@@ -503,8 +503,11 @@ class _EduTrackAppState extends State<EduTrackApp> with WidgetsBindingObserver {
         state == AppLifecycleState.paused) {
       _lockTimer?.cancel();
       _lockTimer = Timer(const Duration(seconds: 8), () async {
-        await LockService.setAppLocked(true);
-        if (mounted) setState(() => _isAppLocked = true);
+        final bool isConfigured = await LockService.isConfigured();
+        if (isConfigured) {
+          await LockService.setAppLocked(true);
+          if (mounted) setState(() => _isAppLocked = true);
+        }
       });
     } else if (state == AppLifecycleState.resumed) {
       _lockTimer?.cancel();

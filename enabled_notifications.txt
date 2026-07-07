@@ -25,34 +25,41 @@ A. Batch Creation
    - Title: Batch Created 🏅
    - Message: First batch created successfully. 🎉
    - ID: 7001
+   - Target Page: /batches (Home Page)
 
 B. Student Milestones
    - Trigger: Adding your 1st student.
      - Title: Student Added 👨‍🎓
      - Message: Congratulations! You added your first student.
      - ID: 6001
+     - Target Page: /batches
    - Trigger: Adding your 10th student.
      - Title: 10 Students Milestone! 🚀
      - Message: You are managing 10 students now. Great job!
      - ID: 6010
+     - Target Page: /batches
    - Trigger: Adding your 50th student.
      - Title: 50 Students Milestone! 🌟
      - Message: 50 students registered. Keep it up!
      - ID: 6050
+     - Target Page: /batches
    - Trigger: Adding your 100th student.
      - Title: 100 Students Milestone! 🏆
      - Message: Incredible! 100 students managed on EduTracker.
      - ID: 6100
+     - Target Page: /batches
 
 C. Payment Records
    - Trigger: Recording your very first payment.
      - Title: Payment Added 💰
      - Message: First payment successfully added. 🎉
      - ID: 8001
+     - Target Page: /history (Payment Reports)
    - Trigger: Recording your 100th payment.
      - Title: 100 Payments! 🎯
      - Message: 100 Payment Records completed.
      - ID: 8100
+     - Target Page: /history (Payment Reports)
 
 ------------------------------------------------------------------------
 2. SECURITY & UTILITY REMINDERS (Fires on state changes)
@@ -62,76 +69,81 @@ A. App Lock Warning
    - Title: Security Alert 🔒
    - Message: Enable App Lock to secure your data.
    - ID: 9001
+   - Target Page: /settings
 
 B. Backup Success
    - Trigger: Successful sync/backup of local Hive data to Cloud Firestore.
    - Title: Backup Complete ☁️
    - Message: All your data has been successfully backed up to the Cloud.
    - ID: 9002
+   - Target Page: /settings
 
 C. Backup Error
    - Trigger: Failure during sync of local data to Cloud Firestore.
    - Title: Backup Warning ⚠️
    - Message: Cloud sync failed. Check your internet connection.
    - ID: 9003
+   - Target Page: /settings
 
 ------------------------------------------------------------------------
 3. SMART SCHEDULED REMINDERS (Fires automatically in background)
 ------------------------------------------------------------------------
 A. Daily Morning Greetings
-   - Trigger: Every day at 8:40 AM (temporarily for testing; will be changed to 7:00 AM later).
+   - Trigger: Every day at 8:40 AM.
    - Title: Good Morning! 🌞
-   - Message: 7 rotating personalized messages greeting you by name and prompting you to update tuition fees (non-consecutive repeats).
+   - Message: Dynamic greeting messages to remind about daily tracking.
    - ID Range: 5001 - 5007
+   - Target Page: /batches (Home Page)
 
 B. Daily Evening Greetings
    - Trigger: Every day at 7:30 PM (19:30).
    - Title: Good Evening! 🌙
-   - Message: 7 rotating personalized messages greeting you by name and prompting you to record today's collections and wrap up tuition entries (non-consecutive repeats).
+   - Message: Wrap up your day by updating pending records.
    - ID Range: 5101 - 5107
+   - Target Page: /batches (Home Page)
 
 C. Weekly Review
    - Trigger: Every Sunday at 10:00 AM.
-   - Title: Weekly Review 📊
-   - Message: Review your weekly batches and payment reports.
+   - Title: Weekly Update 📅
+   - Message: Reminders about weekly fee checks.
    - ID: 4003
+   - Target Page: /history (Payment Reports)
 
 D. Monthly Fee Cycle Checks
-   - Trigger: 1st of every month at 9:00 AM.
+   - Trigger: 1st, 10th, 20th, 28th of every month (10:00 AM).
      - Title: New Fee Month 📅
      - Message: A new month has started. Remember to update dues and generate fee slips.
-     - ID: 2001
-   - Trigger: 15th of every month at 10:00 AM.
-     - Title: Mid-Month Fee Review 💰
-     - Message: Check pending collections for this month.
-     - ID: 3001
+     - ID: 3001, 3010, 3020, 3028
+     - Target Page: /due-details
 
 ------------------------------------------------------------------------
 4. APP LIFECYCLE & ACTIVITY REMINDERS (Triggers on App Minimize/Close)
 ------------------------------------------------------------------------
 A. Dormancy Warnings (Scheduled when app is minimized, cancelled when opened)
-   - Trigger: App has not been opened for 3 days.
+   - Trigger: App has not been opened for 3, 7, 15, or 30 days.
      - Title: We Miss You! 👋
      - Message: Keep your student logs updated. Open EduTracker today.
-     - ID: 1003
-   - Trigger: App has not been opened for 7 days.
-     - Title: Update Records 📝
-     - Message: It's been a week! Check if there are any new student fees to collect.
-     - ID: 1007
-   - Trigger: App has not been opened for 15 days.
-     - Title: Secure Your Data 🔒
-     - Message: Open the app to ensure your cloud backup is up to date.
-     - ID: 1015
-   - Trigger: App has not been opened for 30 days.
-     - Title: Monthly Catch-Up 📅
-     - Message: Let's review this month's tuition progress. Open EduTracker.
-     - ID: 1030
+     - ID: 11003, 11007, 11015, 11030
+     - Target Page: /batches (Home Page)
 
 B. Pending Fee Dues Alert
    - Trigger: On app startup, if there are outstanding fees/dues (fires max once a day).
-   - Title: Fee Dues Pending 📅
+   - Title: Fee Dues Pending 💰
    - Message: You have outstanding tuition fee collections. Check your dashboard.
    - ID: 4001
+   - Target Page: /due-details
+
+C. Feature Prompts (On App Startup, Debounced)
+   - Trigger: No Batches Yet
+     - Title: No Batches Yet 📚
+     - Message: No batches created yet. Create a Batch now!
+     - ID: 5002
+     - Target Page: /create-batch
+   - Trigger: No Students Yet
+     - Title: Add Students 👨‍🎓
+     - Message: Add your first Student to begin Tuition Management.
+     - ID: 5003
+     - Target Page: /add-student
 
 
 ========================================================================

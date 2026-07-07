@@ -961,7 +961,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               _SummaryCard(
                   title: 'Total Students 🧑‍🎓',
                   value: provider.totalStudents.toString(),
-                  color: Colors.deepPurple,
+                  color: Colors.purpleAccent,
                   width: cardWidth,
                   onTap: () => _onActionWithAd('total_students',
                       () => _navigateToBatchesWithFilter(context, 1))),
@@ -975,7 +975,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               _SummaryCard(
                   title: 'Add New Student',
                   icon: Icons.person_add,
-                  color: Colors.deepPurple,
+                  color: Colors.purpleAccent,
                   width: cardWidth,
                   onTap: () => _onActionWithAd('add_student',
                       () => Navigator.pushNamed(context, '/add-student'))),
