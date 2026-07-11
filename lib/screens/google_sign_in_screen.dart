@@ -39,13 +39,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
           _error = 'Sign in cancelled or failed.';
         });
       } else {
-        // If sign-in succeeded, navigate directly to Dashboard widget:
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-          );
-        }
+        // If sign-in succeeded, do nothing. The root Consumer handles the screen change.
       }
     } catch (e) {
       setState(() {
@@ -93,11 +87,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
         ),
       );
     } else {
-      // Signed in -> navigate to dashboard directly using widget (no named routes)
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
+      // Signed in -> do nothing, root Consumer handles the screen change.
     }
   }
 

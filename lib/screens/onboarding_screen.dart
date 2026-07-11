@@ -58,7 +58,7 @@ class OnboardingScreenState extends State<OnboardingScreen>
       await prefs.setBool('onboarding_complete', true);
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed('/batches');
+      // Do nothing: completing onboarding triggers root Consumer rebuild.
     } catch (e) {
       _showError('Failed to save settings: $e');
     } finally {

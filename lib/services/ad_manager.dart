@@ -15,6 +15,7 @@ class AdManager {
   /// Checks if an ad blocker or private DNS is likely blocking ads.
   /// Returns `true` if ads are blocked.
   Future<bool> detectAdBlocker() async {
+    if (kIsWeb) return false;
     // 1. Check general internet connectivity first
     bool hasInternet = false;
     try {

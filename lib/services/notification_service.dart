@@ -290,7 +290,9 @@ class NotificationService {
     var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, 1, 9, 0);
     // If the 1st of this month has already passed, schedule for the 1st of next month
     if (scheduledDate.isBefore(now)) {
-      scheduledDate = tz.TZDateTime(tz.local, now.year, now.month + 1, 1, 9, 0);
+      final nextMonth = now.month == 12 ? 1 : now.month + 1;
+      final nextYear = now.month == 12 ? now.year + 1 : now.year;
+      scheduledDate = tz.TZDateTime(tz.local, nextYear, nextMonth, 1, 9, 0);
     }
 
     await _localNotifications.zonedSchedule(
@@ -330,7 +332,9 @@ class NotificationService {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, 15, 10, 0);
     if (scheduledDate.isBefore(now)) {
-      scheduledDate = tz.TZDateTime(tz.local, now.year, now.month + 1, 15, 10, 0);
+      final nextMonth = now.month == 12 ? 1 : now.month + 1;
+      final nextYear = now.month == 12 ? now.year + 1 : now.year;
+      scheduledDate = tz.TZDateTime(tz.local, nextYear, nextMonth, 15, 10, 0);
     }
 
     await _localNotifications.zonedSchedule(

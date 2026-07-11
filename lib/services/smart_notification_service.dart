@@ -248,7 +248,9 @@ class SmartNotificationService {
     void scheduleForDay(int day, int id, String title, String body) async {
       tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, day, 10, 0);
       if (scheduledDate.isBefore(now)) {
-        scheduledDate = tz.TZDateTime(tz.local, now.year, now.month + 1, day, 10, 0);
+        final nextMonth = now.month == 12 ? 1 : now.month + 1;
+        final nextYear = now.month == 12 ? now.year + 1 : now.year;
+        scheduledDate = tz.TZDateTime(tz.local, nextYear, nextMonth, day, 10, 0);
       }
       await _plugin.zonedSchedule(
         id: id,

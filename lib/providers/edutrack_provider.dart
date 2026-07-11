@@ -78,6 +78,12 @@ class EduTrackProvider extends ChangeNotifier {
   bool _isLoading = true;
   bool _isInitialized = false;
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
+
+  bool get isOnboardingComplete {
+    if (!_isInitialized) return false;
+    return _settingsBox.get('onboarding_complete', defaultValue: false) as bool? ?? false;
+  }
   Timer? _autoBackupTimer;
   Duration autoBackupInterval = const Duration(days: 3);
 
@@ -177,6 +183,7 @@ class EduTrackProvider extends ChangeNotifier {
           _stopFirestoreListener();
           _stopPaymentsListener();
         }
+        notifyListeners();
       });
 
       debugPrint('>>> EduTrackProvider._init completed: initialized=true');

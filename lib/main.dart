@@ -201,48 +201,18 @@ class _AuthRootState extends State<AuthRoot> with WidgetsBindingObserver {
           ),
           themeMode: themeProvider.themeMode,
           // initial UI decided by auth + onboarding
-          home: StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+          home: Consumer<EduTrackProvider>(
+            builder: (context, provider, _) {
+              if (provider.isLoading) {
                 return const _QuickSplash();
               }
 
-              final user = snapshot.data;
-
-              // Handle sign-out: stop listeners when user becomes null
+              final user = FirebaseAuth.instance.currentUser;
               if (user == null) {
-                FirestoreSyncService.instance.stopListeners();
                 return const GoogleSignInScreen();
               }
 
-              // Handle sign-in: sync local to firestore and start listeners
-              // This logic is placed here to ensure it runs when a user is signed in.
-              // Note: This might be called multiple times if the StreamBuilder rebuilds.
-              // A more robust solution would involve a StatefulWidget to manage auth state subscriptions and side effects.
-              FirestoreSyncService.instance
-                  .syncLocalToFirestore(user.uid)
-                  .catchError((e) {
-                // Log or handle the error appropriately
-                if (kDebugMode) {
-                  print('Error syncing local to Firestore: $e');
-                }
-              }).whenComplete(() {
-                FirestoreSyncService.instance.startListeners(user.uid);
-              });
-
-              // user signed in -> decide onboarding
-              bool onboardingComplete = widget.onboardingPref;
-              try {
-                if (Hive.isBoxOpen('settings')) {
-                  final box = Hive.box('settings');
-                  onboardingComplete = box.get('onboarding_complete',
-                          defaultValue: widget.onboardingPref) as bool? ??
-                      widget.onboardingPref;
-                }
-              } catch (_) {}
-
-              if (!onboardingComplete) {
+              if (!provider.isOnboardingComplete) {
                 return const OnboardingScreen();
               }
 

@@ -48,7 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   String _searchQuery = '';
   bool _isSearchFocused = false;
   bool _isAdBlockerDialogShowing = false;
-  bool _isNoInternetDialogShowing = false;
+  bool _isOffline = false;
   StreamSubscription<ConnectivityResult>? _connectivitySubscription;
 
   // used key from AdManager (keeps parity with AdManager's persistence)
@@ -192,46 +192,11 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _updateConnectionStatus(ConnectivityResult result) {
-    if (result == ConnectivityResult.none) {
-      if (!_isNoInternetDialogShowing && mounted) {
-        _showNoInternetDialog();
-      }
-    } else {
-      if (_isNoInternetDialogShowing && mounted) {
-        Navigator.of(context).pop();
-        _isNoInternetDialogShowing = false;
-      }
+    if (mounted) {
+      setState(() {
+        _isOffline = (result == ConnectivityResult.none);
+      });
     }
-  }
-
-  void _showNoInternetDialog() {
-    _isNoInternetDialogShowing = true;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('No Internet Connection'),
-        content: const Text(
-            'Your internet connection appears to be offline. Please enable it to use all features.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // User acknowledged, but we keep state true so it doesn't pop again immediately
-              // unless status changes and comes back.
-              // Actually if they click OK, they probably want to use offline mode.
-              // But the prompt was "warn" them.
-              Navigator.of(context).pop();
-              // We set false so if it happens again (flap), it shows again.
-              _isNoInternetDialogShowing = false;
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    ).then((_) {
-      // Fallback
-      if (mounted) _isNoInternetDialogShowing = false;
-    });
   }
 
   @override
@@ -710,6 +675,18 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _performSignOut() async {
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const PopScope(
+        canPop: false,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+    );
+
     try {
       // try GoogleSignIn sign out first (if used)
       try {
@@ -734,14 +711,15 @@ class _DashboardScreenState extends State<DashboardScreen>
         }
       } catch (_) {}
 
-      // redirect to GoogleSignInScreen using rootNavigator to ensure top-level route replace
-      if (!mounted) return;
-      rootNavigatorKey.currentState?.pushReplacement(
-          MaterialPageRoute(builder: (_) => const GoogleSignInScreen()));
     } catch (e) {
       if (mounted) {
         rootScaffoldMessengerKey.currentState
             ?.showSnackBar(SnackBar(content: Text('Failed to sign out: $e')));
+      }
+    } finally {
+      // Close the loading dialog safely
+      if (mounted) {
+        Navigator.of(context).pop();
       }
     }
   }
@@ -887,6 +865,23 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
       body: Column(
         children: [
+          if (_isOffline)
+            Container(
+              width: double.infinity,
+              color: Colors.redAccent.withAlpha(200),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.wifi_off, color: Colors.white, size: 16),
+                  SizedBox(width: 8),
+                  Text(
+                    'You are offline. Running in local-only mode.',
+                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
               child: _searchQuery.isEmpty
                   ? _buildDashboard(context, provider, name)
