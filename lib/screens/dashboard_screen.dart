@@ -19,6 +19,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/google_auth_service.dart';
 
 import 'subscribe_screen.dart';
 import '../providers/edutrack_provider.dart';
@@ -626,12 +627,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                                       Provider.of<EduTrackProvider>(context,
                                           listen: false);
                                   await provider.deleteUserAccount();
-                                  if (!mounted) return;
-                                  // Navigate to login screen
-                                  rootNavigatorKey.currentState
-                                      ?.pushReplacement(MaterialPageRoute(
-                                          builder: (_) =>
-                                              const GoogleSignInScreen()));
                                 } catch (e) {
                                   if (mounted) {
                                     rootScaffoldMessengerKey.currentState
@@ -675,51 +670,13 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _performSignOut() async {
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => const PopScope(
-        canPop: false,
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      ),
-    );
-
     try {
-      // try GoogleSignIn sign out first (if used)
-      try {
-        final google = GoogleSignIn();
-        if (await google.isSignedIn()) {
-          await google.disconnect();
-          await google.signOut();
-        }
-      } catch (e) {
-        // don't fail entire sign-out if google sign-out errors; continue to firebase sign-out
-        if (kDebugMode) print('GoogleSignIn signOut error: $e');
-      }
-
-      await FirebaseAuth.instance.signOut();
-
-      // clear any app-level flags if needed (optional)
-      try {
-        if (Hive.isBoxOpen('settings')) {
-          Hive.box('settings');
-          // don't erase onboarding flag here, just optional cleanup
-          // box.delete('name'); // uncomment if you want to clear stored name
-        }
-      } catch (_) {}
-
+      final provider = Provider.of<EduTrackProvider>(context, listen: false);
+      await provider.signOut();
     } catch (e) {
       if (mounted) {
         rootScaffoldMessengerKey.currentState
             ?.showSnackBar(SnackBar(content: Text('Failed to sign out: $e')));
-      }
-    } finally {
-      // Close the loading dialog safely
-      if (mounted) {
-        Navigator.of(context).pop();
       }
     }
   }

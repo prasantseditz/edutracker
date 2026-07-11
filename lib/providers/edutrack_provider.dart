@@ -2227,10 +2227,43 @@ class EduTrackProvider extends ChangeNotifier {
       // 4. Delete Auth Account
       await user.delete();
 
+      // 5. Clear Google Sign-In session cache to force account chooser next time
+      try {
+        final googleAuth = FirebaseServices();
+        await googleAuth.googleSignIn.disconnect();
+        await googleAuth.googleSignIn.signOut();
+      } catch (e) {
+        debugPrint('Failed to disconnect google sign-in on account deletion: $e');
+      }
+
       debugPrint('>>> deleteUserAccount -> successfully deleted account $uid');
     } catch (e) {
       debugPrint('deleteUserAccount error: $e');
       rethrow; // let UI handle the error (e.g. re-auth required)
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> signOut() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // try GoogleSignIn sign out first (if used)
+      try {
+        final googleAuth = FirebaseServices();
+        await googleAuth.googleSignIn.disconnect();
+        await googleAuth.googleSignIn.signOut();
+      } catch (e) {
+        debugPrint('GoogleSignIn signOut error: $e');
+      }
+
+      await _auth.signOut();
+    } catch (e) {
+      debugPrint('signOut error: $e');
+      rethrow;
     } finally {
       _isLoading = false;
       notifyListeners();
